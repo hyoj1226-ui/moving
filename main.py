@@ -16,36 +16,18 @@ st.title("🎬 어제의 박스오피스 TOP 10")
 # -----------------------------------------------------------------------------
 # 2. 한국 시간(KST) 기준 '어제' 날짜 자동 계산
 # -----------------------------------------------------------------------------
-# 배포 서버의 시계가 해외(UTC) 기준이어도 한국 시간 기준으로 어제를 정확히 구합니다.
+# 배포 서버 시계가 해외(UTC) 기준이어도 한국 시간 기준으로 어제를 정확히 계산합니다.
 kst = pytz.timezone("Asia/Seoul")
 now_kst = datetime.datetime.now(kst)
 yesterday_kst = now_kst - datetime.timedelta(days=1)
-target_dt = yesterday_kst.strftime("%Y%m%d")  # 예: '20261020'
+target_dt = yesterday_kst.strftime("%Y%m%d")
 
 st.caption(f"📅 기준 날짜: {yesterday_kst.strftime('%Y년 %m월 %d일')}")
 
 # -----------------------------------------------------------------------------
-# 3. 비밀 금고(secrets)에서 API Key 불러오기
+# 3. API Key 직접 지정 (방법 3 적용)
 # -----------------------------------------------------------------------------
-# Streamlit Cloud의 Secrets 설정에 저장된 'KOBIS_KEY'를 읽어옵니다.
-if "KOBIS_KEY" not in st.secrets:
-    st.error("🚨 API 키 설정 오류")
-    st.warning(
-        """
-    **`KOBIS_KEY` 비밀키를 찾을 수 없습니다.**
-    
-    **해결 방법:**
-    1. Streamlit Cloud 대시보드로 이동합니다.
-    2. 해당 앱의 **[Settings] -> [Secrets]** 메뉴를 클릭합니다.
-    3. 아래 형식으로 API 키를 등록해 주세요:
-       ```toml
-       KOBIS_KEY = "발급받은_공식_API_키"
-       ```
-    """
-    )
-    st.stop()
-
-api_key = st.secrets["KOBIS_KEY"]
+api_key = "37743c31b2564c533a1fde24bb8558ab"
 
 # -----------------------------------------------------------------------------
 # 4. KOBIS API 데이터 요청하기
@@ -72,16 +54,16 @@ except Exception as e:
 # -----------------------------------------------------------------------------
 # 5. API 응답 검증 및 오류 처리 (faultInfo 및 빈 데이터 검사)
 # -----------------------------------------------------------------------------
-# KOBIS API는 키가 틀려도 상태코드 200과 함께 'faultInfo' 응답을 전달합니다.
+# KOBIS API는 인증키가 틀려도 상태코드 200과 함께 'faultInfo' 응답을 전달합니다.
 if "faultInfo" in data:
     fault = data["faultInfo"]
-    st.error("🚨 API 인증 failure가 발생했습니다.")
+    st.error("🚨 API 인증 오류가 발생했습니다.")
     st.info(
         f"""
     **확인 항목:**
     - **오류 메시지:** `{fault.get('message', '알 수 없는 오류')}` (코드: `{fault.get('errorCode', 'N/A')}`)
-    - Streamlit Secrets에 입력한 `KOBIS_KEY` 값이 정확한지 확인해 주세요.
-    - [KOBIS 개발자 센터](https://www.kobis.or.kr/kobisopenapi)에서 키 상태를 체크해 주세요.
+    - 코드에 직접 작성된 `api_key` 값이 정확한지 확인해 주세요.
+    - [KOBIS 개발자 센터](https://www.kobis.or.kr/kobisopenapi)에서 키 사용 가능 여부를 체크해 주세요.
     """
     )
     st.stop()
@@ -95,8 +77,8 @@ if not daily_list:
     st.info(
         """
     **확인 항목:**
-    - KOBIS 전산망 집계 작업 중일 수 있습니다. (보통 새벽시간대에 집계가 진행됩니다.)
-    - 날짜 파라미터(`targetDt`)가 정상 전달되었는지 확인해 주세요.
+    - KOBIS 전산망 집계 작업 중일 수 있습니다. (보통 새벽 시간대에 집계가 진행됩니다.)
+    - 요청 날짜 파라미터(`targetDt`)가 정상 전달되었는지 확인해 주세요.
     """
     )
     st.stop()
@@ -106,7 +88,7 @@ if not daily_list:
 # -----------------------------------------------------------------------------
 df = pd.DataFrame(daily_list)
 
-# 숫자로 된 문자열 컬럼들을 정수(int)형으로 전환
+# 숫자로 들어온 문자열 컬럼을 정수(int)형으로 전환
 numeric_cols = ["rank", "audiCnt", "audiAcc", "scrnCnt"]
 for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -144,7 +126,6 @@ st.divider()
 # [표] 박스오피스 전체 순위 (10위까지)
 st.subheader("📋 전체 순위 목록")
 
-# 화면에 표시할 컬럼만 추출 및 이름 변경
 display_df = df[
     ["rank", "movieNm", "openDt", "audiCnt", "audiAcc", "scrnCnt"]
 ].copy()
@@ -157,7 +138,7 @@ display_df.columns = [
     "스크린수",
 ]
 
-# 관객수/누적관객/스크린수천 단위 쉼표 표기 적용
+# 관객수/누적관객/스크린수 천 단위 쉼표 표기
 st.dataframe(
     display_df.style.format(
         {"관객수": "{:,}명", "누적관객": "{:,}명", "스크린수": "{:,}개"}
