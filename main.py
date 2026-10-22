@@ -175,7 +175,7 @@ with col3:
 
 st.divider()
 
-# [막대그래프] 관객 수 상위 5편 (황금색 막대, 고정 높이)
+# [막대그래프] 관객 수 상위 5편 (오류 수정 부분)
 st.subheader("TOP 5 AUDIENCE CHART")
 top5_df = df.head(5)[["movieNm", "audiCnt"]].copy()
 top5_df.rename(
@@ -204,9 +204,8 @@ chart = (
         ),
         tooltip=["영화명", "당일관객수"],
     )
-    .properties(height=300)
+    .properties(height=300, background="transparent")  # 투명 배경 옵션 포함
     .configure_view(strokeWidth=0)
-    .configure_background(background="transparent")
 )
 
 st.altair_chart(chart, use_container_width=True)
