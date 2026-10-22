@@ -6,69 +6,71 @@ import requests
 import streamlit as st
 
 # -----------------------------------------------------------------------------
-# 1. 페이지 기본 설정 및 시네마 커스텀 CSS 적용
+# 1. 페이지 기본 설정 및 오스카(Gold & Black) 커스텀 CSS 적용
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="BOX OFFICE", layout="wide")
+st.set_page_config(page_title="ACADEMY BOX OFFICE", layout="wide")
 
-# 영화관 느낌의 폰트(Cinzel, Noto Sans KR) 및 레드/블랙 테마 스타일링
+# 오스카 시상식 느낌의 폰트(Cinzel) 및 골드/블랙 럭셔리 스타일링
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+KR:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+KR:wght@300;400;600;700&display=swap');
 
     /* 전체 배경 및 기본 폰트 */
     .stApp {
-        background-color: #121215;
-        color: #E0E0E0;
+        background-color: #0E0E10;
+        color: #E6E6E6;
         font-family: 'Noto Sans KR', sans-serif;
     }
 
-    /* 헤더 타이틀 폰트 */
+    /* 오스카 헤더 타이틀 (클래식 골드) */
     h1, h2, h3 {
         font-family: 'Cinzel', 'Noto Sans KR', serif !important;
-        color: #E50914 !important;
-        letter-spacing: 1.5px;
+        color: #D4AF37 !important;
+        letter-spacing: 2px;
         font-weight: 700;
+        text-transform: uppercase;
     }
 
-    /* 카드(Metric) 메인 박스 스타일링 */
+    /* 카드(Metric) 메인 박스 스타일링 - 은은한 골드 테두리 */
     div[data-testid="stMetric"] {
-        background-color: #1C1C21;
-        border: 1px solid #2D2D35;
-        border-left: 4px solid #E50914;
-        padding: 16px 20px;
+        background-color: #16161A;
+        border: 1px solid #2A261A;
+        border-left: 4px solid #D4AF37;
+        padding: 18px 22px;
         border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     }
 
     div[data-testid="stMetricValue"] {
-        color: #F5F5F5 !important;
+        color: #F8F5E6 !important;
         font-weight: 700;
         font-size: 1.6rem !important;
     }
 
     div[data-testid="stMetricLabel"] {
-        color: #9E9E9E !important;
-        font-size: 0.9rem !important;
+        color: #C5A059 !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 1px;
         margin-bottom: 4px;
     }
 
-    /* 구분선 컬러 */
+    /* 구분선 컬러 (다크 골드/브론즈 톤) */
     hr {
-        border-color: #2A2A32 !important;
+        border-color: #2A2415 !important;
     }
 
-    /* 입력 폼 스타일링 */
+    /* 날짜 선택 박스 스타일링 */
     .stDateInput > div {
-        background-color: #1C1C21;
-        border: 1px solid #33333D;
+        background-color: #16161A;
+        border: 1px solid #3A321F;
         color: #FFFFFF;
         border-radius: 4px;
     }
 
     /* 서브 캡션 색상 */
     .stCaption {
-        color: #888892 !important;
+        color: #9A8A6B !important;
     }
     </style>
 """,
@@ -173,17 +175,16 @@ with col3:
 
 st.divider()
 
-# [막대그래프] 관객 수 상위 5편 (스크롤 없이 지정된 영역에 고정)
+# [막대그래프] 관객 수 상위 5편 (황금색 막대, 고정 높이)
 st.subheader("TOP 5 AUDIENCE CHART")
 top5_df = df.head(5)[["movieNm", "audiCnt"]].copy()
 top5_df.rename(
     columns={"movieNm": "영화명", "audiCnt": "당일관객수"}, inplace=True
 )
 
-# Altair 그래프를 사용하여 영역에 맞춰 반응형으로 고정
 chart = (
     alt.Chart(top5_df)
-    .mark_bar(color="#E50914", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+    .mark_bar(color="#D4AF37", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
     .encode(
         x=alt.X(
             "영화명:N",
@@ -197,8 +198,8 @@ chart = (
             axis=alt.Axis(
                 labelColor="#CCCCCC",
                 title="관객 수 (명)",
-                titleColor="#888888",
-                gridColor="#2A2A32",
+                titleColor="#9A8A6B",
+                gridColor="#2A2415",
             ),
         ),
         tooltip=["영화명", "당일관객수"],
